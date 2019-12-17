@@ -27,12 +27,32 @@ start:
     syscall
 
     mov r12, rax
-
-    printd rax ; ? 
+    cmp rax, 0
+    jl failure_1
+    printd 10001
     output_newline
+    jmp cont_1
+failure_1:
+    printd 10002
+    output_newline
+cont_1:
 
+    printd r12 ; ? 
+    output_newline
+    printd r12 ;
+    output_newline 
+
+    output_sepline
     mov rax, SYS_READ
     mov rdi, [input_fd]
+    mov rsi, r12
+    mov rdx, 20
+    syscall
+    printd rax
+    output_newline
+
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
     mov rsi, r12
     mov rdx, 20
     syscall
@@ -85,3 +105,5 @@ digits:     db    "123456789_123456789_123456789"
 newline:    db    10
 hexdigits:  db    "0123456789abcdef***" 
 debug_line: db    "----------",10
+failure:    db    "failure",10
+success:    db    "success",10
