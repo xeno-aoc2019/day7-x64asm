@@ -16,11 +16,7 @@ start:
     mov [input_fd], rax
 
     io_open_outfile [output_fd], outfile
-;    mov rax, SYS_OPEN
-;    mov rdi, outfile
-;    mov rsi, O_CREATE_WRITE ;  flags=ro
-;    mov rdx, 0666o; mode
-;    syscall
+
     mov [output_fd], rax
 
     ; write to stdout
@@ -41,22 +37,62 @@ start:
     mov rsi, msg
     mov rdx, msg.len
     syscall
-    output_digit rax
-    output_newline
-    output_digit [output_fd]
-    output_newline
-    output_digit rdi
-    output_newline
 
     ; close it 
-    mov rax, SYS_CLOSE
-    mov rdi, [output_fd]
+    io_close [output_fd]
+
+    ;; experiment
+
+    mov r11, 0xa4bc ; should be output as 0xa4bc
+
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rdx, 1 ; length 
+    mov r10, r11 ; r10 = r11
+    and r10, 0xf000
+    shr r10, 24
+    mov rsi, hexdigits
+    add rsi, r10 ; adding the hex digit...
     syscall
 
-    ; exit(0)
-    mov rax, SYS_EXIT ; exit
-    mov rdi, EXIT_SUCCESS
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rdx, 1 ; length 
+    mov r10, r11 ; r10 = r11
+    and r10, 0x0f00
+    shr r10, 16
+    mov rsi, hexdigits
+    add rsi, r10 ; adding the hex digit...
     syscall
+
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rdx, 1 ; length 
+    mov r10, r11 ; r10 = r11
+    and r10, 0x00f0
+    shr r10, 8
+    mov rsi, hexdigits
+    add rsi, r10 ; adding the hex digit...
+    syscall
+
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rdx, 1 ; length 
+    mov r10, r11 ; r10 = r11
+    and r10, 0x000f
+    mov rsi, hexdigits
+    add rsi, r10 ; adding the hex digit...
+    syscall
+    output_newline
+
+
+    ; output_digit r11
+    ; output_newline
+    
+
+
+    ; exit(0)
+    sys_exit EXIT_SUCCESS
 
 section .data
 
@@ -68,3 +104,4 @@ input_fd:   dq     0x0
 output_fd:  dq     0x0
 digits:     db     "123456789_123456789_123456789"
 newline:    db     10
+hexdigits:  db     "0123456789abcdef***" 
