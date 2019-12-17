@@ -2,6 +2,7 @@
 %include "syscall.inc"
 
 %include "debug.inc"
+%include "writenum.inc"
 
 default rel
 global start
@@ -14,6 +15,29 @@ start:
     mov rdx, 0        ; mode, not used
     syscall
     mov [input_fd], rax
+
+    ; allocate some memory
+    mov rax, SYS_MMAP
+    xor rdi, rdi
+    mov rsi, 1000 ; size
+    mov rdx, PROT_RW
+    mov rcx, MAP_PRIVATE
+    mov r8,  0
+    mov r9,  0
+    syscall
+
+    mov r12, rax
+
+    printd rax ; ? 
+    output_newline
+
+    mov rax, SYS_READ
+    mov rdi, [input_fd]
+    mov rsi, r12
+    mov rdx, 20
+    syscall
+
+    output_newline
 
     io_open_outfile [output_fd], outfile
 
@@ -36,75 +60,15 @@ start:
     ; close it 
     io_close [output_fd]
 
-    ;; experiment
-
-    output_sepline
-
-    mov r11, 0xc0
-    shr r11, 4
-    output_digit r11
-
-    output_newline
-    output_sepline
-
-    mov r12, 0xa4bc ;
-    mov r11, r12
-
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rdx, 1 ; length 
-    mov r10, r11 ; r10 = r11
-    and r10, 0xf000
-    shr r10, 12
-    mov rsi, hexdigits
-    add rsi, r10 ; adding the hex digit...
-    syscall
-    mov r11, r12 ; should be output as 0xa4bc
-
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rdx, 1 ; length 
-    mov r10, r11 ; r10 = r11
-    and r10, 0x0f00
-    shr r10, 8
-    mov rsi, hexdigits
-    add rsi, r10 ; adding the hex digit...
-    syscall
-    mov r11, r12 ; should be output as 0xa4bc
-
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rdx, 1 ; length 
-    mov r10, r11 ; r10 = r11
-    and r10, 0x00f0
-    shr r10, 4
-    mov rsi, hexdigits
-    add rsi, r10 ; adding the hex digit...
-    syscall
-
-    mov r11, r12 ; should be output as 0xa4bc
-
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rdx, 1 ; length 
-    mov r10, r11 ; r10 = r11
-    and r10, 0x000f
-    mov rsi, hexdigits
-    add rsi, r10 ; adding the hex digit...
-    syscall
-    output_newline
-
-    output_hex64 0x1234
-    output_newline
-    output_hex64 0xa1b2
-    output_newline
-    output_hex64 0xf951
-    output_newline
-
     ; output_digit r11
     ; output_newline
     
-
+    output_sepline
+    printd 10012345
+    output_newline
+    mov rax, 1231231
+    printd rax
+    output_newline
 
     ; exit(0)
     sys_exit EXIT_SUCCESS
