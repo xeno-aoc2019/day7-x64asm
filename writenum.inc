@@ -32,7 +32,15 @@
     push_last_dec_digit_rax
     push_last_dec_digit_rax
     push_last_dec_digit_rax
+    push_last_dec_digit_rax
+    push_last_dec_digit_rax
+    push_last_dec_digit_rax
 
+
+
+    write_digit_from_stack %1
+    write_digit_from_stack %1
+    write_digit_from_stack %1
     write_digit_from_stack %1
     write_digit_from_stack %1
     write_digit_from_stack %1

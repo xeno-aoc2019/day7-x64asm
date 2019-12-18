@@ -20,8 +20,10 @@
 %define PROT_WRITE       2 ; memory protection for mmap
 %define PROT_RW          3 ; memory protection for mmap
 
-%define MAP_SHARED       1 ; memory mapping
-%define MAP_PRIVATE      2 ; memory mapping
+%define MAP_SHARED       1    ; memory mapping
+%define MAP_PRIVATE      2    ; memory mapping
+%define MAP_ANON_PRIV    4098 ; memory mapping, anonymous (not file)
+%define MAP_FILE_PRIV    2    ; memory mapping, file
 
 %define O_CREATE_WRITE 0x0201 ; open for write, create
 

@@ -22,6 +22,14 @@
     syscall
 %endmacro
 
+%macro println_buffer 0
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rsi, buffer
+    mov rdx, 61
+    syscall
+%endmacro
+
 %macro output_hex64 1
     mov r12, %1
     
