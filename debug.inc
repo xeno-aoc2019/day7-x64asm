@@ -22,6 +22,22 @@
     syscall
 %endmacro
 
+%macro output_failure 0
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rsi, failure
+    mov rdx, 8
+    syscall
+%endmacro
+
+%macro output_success 0
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rsi, success
+    mov rdx, 8
+    syscall
+%endmacro
+
 %macro println_buffer 0
     mov rax, SYS_WRITE
     mov rdi, FD_STDOUT

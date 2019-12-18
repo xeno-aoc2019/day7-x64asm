@@ -15,6 +15,12 @@ start:
     mov rdx, 0        ; mode, not used
     syscall
     mov [input_fd], rax
+    jc fail_0
+    output_success
+    jmp cont_0
+fail_0:
+    output_failure
+cont_0:
 
     ; allocate some memory
     mov rax, SYS_MMAP
@@ -28,14 +34,11 @@ start:
 
     mov r13, rdi 
     mov r12, rax
-    cmp rax, 0
-    jl fail_1
-    printd 10001
-    output_newline
+    jc fail_1
+    output_success
     jmp cont_1
 fail_1:
-    printd 10002
-    output_newline
+   output_failure
 cont_1:
 
     printd r12 ; ? 
