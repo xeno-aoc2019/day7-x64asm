@@ -12,12 +12,15 @@
    jmp error_handler
 %endmacro
 
-
 default rel
 global start
 section .text
+
 ;; open input file
+extern testprint
+
 start:
+    call testprint
     io_open_infile [input_fd], input_txt
     jnc cont_0
     handle_error 1, rax
