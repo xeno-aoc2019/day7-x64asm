@@ -1,5 +1,3 @@
-%include "sysconst.inc"
-%include "syscall.inc"
 
 
 %macro push_last_dec_digit_rax 0

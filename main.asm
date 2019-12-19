@@ -4,67 +4,54 @@
 %include "debug.inc"
 %include "writenum.inc"
 
+; handle_error error_code errno
+%macro handle_error 2
+   mov [errno], %2
+   mov r12, %1
+   mov [error_code], r12
+   jmp error_handler
+%endmacro
+
+
 default rel
 global start
 section .text
+;; open input file
 start:
-   
-    mov rax, SYS_OPEN
-    mov rdi, filename 
-    mov rsi, O_RDONLY ; flags=ro
-    mov rdx, 0        ; mode, not used
-    syscall
-    mov [input_fd], rax
-    jc fail_0
-    output_success
-    jmp cont_0
-fail_0:
-    output_failure
+    io_open_infile [input_fd], input_txt
+    jnc cont_0
+    handle_error 1, rax
 cont_0:
+    ; mov [input_fd], rax
 
-    ; allocate some memory
-    mov rax, SYS_MMAP
-    xor rdi, rdi ; memory address, 0 = let the system find some
-    mov rsi, 1000 ; size
-    mov rdx, 7 ; RWX 
-    mov rcx, MAP_ANON_PRIV
-    mov r8,  -1 ; fd
-    mov r9,  0 ; offset
-    syscall
-
-    mov r13, rdi 
-    mov r12, rax
-    jc fail_1
-    output_success
-    jmp cont_1
-fail_1:
-   output_failure
-cont_1:
-
-    printd r12 ; ? 
-    output_newline
-    printd r13 ;
-    output_newline 
-
-    println_buffer
-
-    output_sepline
-    mov rax, SYS_READ
-    mov rdi, [input_fd]
-;    mov rsi, r12
-    mov rsi, buffer
-    mov rdx, 20
-    syscall
-    cmp rax, 0
-    mov r12, rax
-    jl fail_2
-    printd 20001
-    output_newline
-    jmp cont_2
-fail_2:
-    printd 20002
-    output_newline
+    trace 100
+    sys_allocmem [input_buf_p], 1000
+    sys_allocmem [program_p], 1000
+    jnc cont_1
+    handle_error 2, rax
+cont_1:    
+    freads [input_fd], input_buf_p, 20
+    jnc cont_2
+    handle_error 3, rax
 cont_2:
+    println_reg r_rax, rax ;; TODO: read length not in rax
+    trace 200
+    mov r12, rax
+
+    ; write input_buf_p[...r12]
+
+    trace 210
+    prints input_buf_p, 10
+    println
+    trace 220
+    mov rax, SYS_WRITE
+    mov rdi, FD_STDOUT
+    mov rsi, [input_buf_p]
+    mov rdx, 10
+    syscall
+    jnc cont_3
+
+cont_3:
     printd r12
     output_newline
 
@@ -78,23 +65,12 @@ cont_2:
 
     output_newline
 
-    io_open_outfile [output_fd], outfile
-
-    mov [output_fd], rax
+    io_open_outfile [output_fd], output_txt
 
     ; write to stdout
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rsi, msg
-    mov rdx, msg.len
-    syscall
-
-    ; write to output file
-    mov rax, SYS_WRITE
-    mov rdi, [output_fd]
-    mov rsi, msg
-    mov rdx, msg.len
-    syscall
+    prints msg, msg.len
+    ; write to file
+    fprints [output_fd], msg, msg.len
 
     ; close it 
     io_close [output_fd]
@@ -112,26 +88,47 @@ cont_2:
     ; exit(0)
     sys_exit EXIT_SUCCESS
 
+error_handler:
+    prints error_code_lab, 12
+    printd [error_code]
+    prints errno_lab, 7
+    printd [errno]
+    println
+    sys_exit EXIT_FAILURE
+
 section .data
 
-msg:          db    "Hello, world!", 10
-.len:         equ   $ - msg
-filename:     db    "input.txt",0
-outfile:      db    "output.txt",0
-input_fd:     dq    0x0
-output_fd:    dq    0x0
-digits:       db    "123456789_123456789_123456789"
-newline:      db    10
-comma         db    0x2c
-space         db    0x20
-zero_chr      db    0x30
-hexdigits:    db    "0123456789abcdef***" 
-debug_line:   db    "----------",10
-failure:      db    "failure",10
-success:      db    "success",10
-buffer:       db    "____________________________________________________________",10
-input_buf_p:  dq    0x0 ; ptr to memory buffer for parsing
-input_p       dq    0x0 ; ptr to current pos in parsing
-input_buf_size: dq    5 ; size of input
-program_ptr:  dq    0x0 ; ptr to parsed program
+msg:            db    "Hello, world!", 10
+.len:           equ   $ - msg
+input_txt:      db    "input.txt",0
+output_txt:     db    "output.txt",0
+input_fd:       dq    0x0
+output_fd:      dq    0x0
+digits:         db    "123456789_123456789_123456789"
+newline:        db    10
+comma           db    0x2c
+space           db    0x20
+zero_chr        db    0x30
+hexdigits:      db    "0123456789abcdef***" 
+debug_line:     db    "----------",10
+failure:        db    "failure",10
+success:        db    "success",10
+buffer:         db    "____________________________________________________________",10
+input_buf_p:    dq    0x0 ; ptr to memory buffer for parsing
+input_p         dq    0x0 ; ptr to current pos in parsing
+input_buf_read: dq    0x0 ; size of input
+input_read_c:   dq    0x0 ; ptr to parsed program
+r_rax           dq    "rax: "
+r_rdi           dq    "rdi: "
+r_rdx           dq    "rdx: "
+r_r10           dq    "r10: "
+r_r11           dq    "r11: "
+r_r12           dq    "r12: "
+error_code      dq    0x0
+errno           dq    0x0
+error_code_lab  db    "error_code: "
+errno_lab       db    "errno: "
+trace_lab       db    "trace: "
+program_p       dq    0x0
+program_iter    dq    0x0
  
