@@ -25,6 +25,18 @@ extern _parsefile
 start:
     trace 0
     trace -1
+
+    printd 42
+    println
+    mov r14, rsp
+    printd r14
+    println
+    printd -1
+    println
+    mov r14, rsp
+    printd r14
+    println
+
     call _parsefile
 
     io_open_infile [input_fd], input_txt

@@ -9,11 +9,23 @@
 %define NEWLINE 10
 %define ZERO    0x30
 
-%macro debug_num 1
+%macro debug_num 2 
+;    printd r10
+    push r10
+    push r11
+    push rax
+    push rdx
     mov r10, %1
+    mov r11, %2
     prints debug_s, debug_s.len
     printd r10
+    prints space, 1
+    printd r11
     println
+    pop rdx
+    pop rax
+    pop r11
+    pop r10
 %endmacro
 
 ; conv:
@@ -51,7 +63,7 @@ disp_bytes: ; rax
     prints comma, 1
     jmp .printed
 .printed:
-    prints space, 1
+;    prints space, 1
     mov rax, r12 ; restore the value
     shr rax, 8 ; <- shift to next byte
     inc r10
@@ -59,7 +71,7 @@ disp_bytes: ; rax
 .null:
     prints null, 4
 .end:
-    println
+ ;   println
     pop r10
     pop r11
     pop r12
@@ -79,22 +91,23 @@ process_bytes: ; rax = curr_val, rsi = int
 .loop:
     cmp r10, 8 ; if byte_count = 8 goto end (byte finished)
     je .end
-
     mov rdx, rsi   ; current_char = int.last_byte
     and rdx, 255 
-
+    debug_num 100, rdx
     cmp rdx, 0     ; if current_char = NULL goto null
     je .null 
     cmp rdx, 10    ; if current_char = NEWLINE goto null
     je .null
-
     cmp rdx, COMMA ; if current_char = COMMA goto comma
     je .comma
-
     sub rdx, ZERO ; current_char.int_from_ascii
+ 
+    debug_num 200, rdx
 
+    debug_num 210, rax
     mul r12        ; curr_val = curr_val*10+current_char/digit
     add rax, rdx 
+    debug_num 300, rax
 
     inc r10         ; byte_count++
     shr rsi, 8      ; removing int.last_byte
@@ -131,33 +144,85 @@ process_bytes: ; rax = curr_val, rsi = int
     pop r10
     ret
 
+next_input: ; -> rax
+    ; r13 = input_iter
+    ; r10 = *input
+    push r10
+    push r12
+    push r13
+    mov r10, input_buf     ; *input = input_buf
+    mov r12, [r10]         ; r12 = input_buf.deref
+    mov r13, [input_iter]  ; load input_iter
+    add r12, r13           ;
+
+    add r13, 8             ; input_iter += 8  (save)
+    mov [input_iter], r13  ; 
+
+    mov r12, [r12]         ; input = input_iter.deref
+    mov rax, r12
+    pop r13
+    pop r12
+    pop r10
+    ret
+
+get_input: ; index = rax, output = rax
+    push r10
+    push r12
+    mov r10, output_buf
+    mov r12, [r10]
+    add r12, rax
+    mov rax, [r12]
+    pop r12
+    pop r10
+    ret
+
+%macro disp_program 1
+    mov rax, %1
+    call get_input
+    debug_num 300, rax
+%endmacro
+
+
 ; parsefile 
 _parsefile:
     io_open_infile [input_fd], input_fname
-    memalloc [input_buf], 1000
-    memalloc [output_buf], 1000
-    freads [input_fd], [input_buf], 100
+    memalloc [input_buf], 10000
+    memalloc [output_buf], 10000
+    freads [input_fd], [input_buf], 15
     mov [input_size], rax
     mov r12, rax
     prints [input_buf], r12
     println
-    debug_num [input_size]
-    debug_num 10001
-    mov r10, input_buf
-    mov r12, [r10]
-    mov r12, [r12]
-    mov rax, r12
-    call disp_bytes 
+    debug_num 1000, [input_size]
+
+    xor r14, r14 ; r14 = current_val
+.loop:
+
+    call next_input ; rax = input.iter.next
+    mov r14, rax ; r14 = rax = input
+    call disp_bytes  ; displays the bytes of rax
     println
-    debug_num 10002
-    xor rax, rax ; current_val = 0
-    mov rsi, r12 ; int 
+
+    mov rax, r14
+    mov rsi, r14 ; int 
     call process_bytes
-    debug_num rax ; printing return value from process_bytes
-    debug_num 10003
+    mov r14, rax
+    
+    push rax
+    debug_num 2000, rax
+    pop rax
 
+    cmp rax, -1
+    jne .loop
 
-.end_of_file:
+    debug_num 3000, rax ; printing return value from process_bytes
+    debug_num 4000, 10003
+    disp_program 0
+    disp_program 1
+    disp_program 2
+    disp_program 3
+
+    ret
 
 
 section .data
