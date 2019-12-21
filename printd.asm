@@ -17,6 +17,17 @@ section .text
 
 ;  [fd] digits
 _fprintd: ; FD(rdi) num(rax)
+    cmp rax, 0
+    je .null
+    mov rcx, rax
+    sar rcx, 63
+    jrcxz .positive
+    xor rax, rcx
+    sub rax, rcx
+    push rax
+    prints minus, 1
+    pop rax
+.positive:
     xor r8, r8
     xor rdx, rdx
     mov rsi, 10
@@ -42,6 +53,11 @@ _fprintd: ; FD(rdi) num(rax)
     syscall
     inc r9
     jmp .digit
+.null: ; zero, so not looping, just writing 0
+    mov rax, SYS_WRITE
+    mov rdx, 1; length
+    mov rsi, digits
+    syscall
 .end:
     ret
 
@@ -54,4 +70,5 @@ debug1:         db    "printd:1",10
 .len            equ   $ - debug1
 debug2:         db    "printd:2",10
 .len            equ   $ - debug2
+minus:          db    "-"
 

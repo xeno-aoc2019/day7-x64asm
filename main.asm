@@ -18,21 +18,15 @@ global start
 section .text
 
 ;; open input file
-extern testprint
 extern _fprintd
 extern _memalloc
+extern _parsefile
 
 start:
-    mov rax, 42
-    mov rdi, 1
-    call _fprintd
-    println
-    mov rax, 199199
-    mov rdi, 1
-    call _fprintd
-    println
+    trace 0
+    trace -1
+    call _parsefile
 
-    call testprint
     io_open_infile [input_fd], input_txt
     jnc cont_0
     handle_error 1, rax
@@ -41,66 +35,25 @@ cont_0:
 
     trace 100
     memalloc [input_buf_p], 1000
-    memalloc [program_p], 1000
-    jnc cont_1
-    handle_error 2, rax
-cont_1:    
-    freads [input_fd], input_buf_p, 20
-    jnc cont_2
-    handle_error 3, rax
-cont_2:
-    println_reg r_rax, rax ;; TODO: read length not in rax
-    trace 200
-    mov r12, rax
+    ; memalloc [program_p], 1000
+    ; jnc cont_1
+    ; handle_error 2, rax
+; cont_1:    
+  ;   freads [input_fd], input_buf_p, 20
+ ;   jnc cont_2
+;    handle_error 3, rax
+; cont_2:
 
     ; write input_buf_p[...r12]
 
-    trace 210
-    prints input_buf_p, 10
-    println
-    trace 220
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rsi, [input_buf_p]
-    mov rdx, 10
-    syscall
-    jnc cont_3
 
-cont_3:
-    printd r12
-    output_newline
-
-    println_buffer
-
-    mov rax, SYS_WRITE
-    mov rdi, FD_STDOUT
-    mov rsi, r12
-    mov rdx, 20
-    syscall
-
-    output_newline
-
+; cont_3:
+ ;   printd r12
+ 
     io_open_outfile [output_fd], output_txt
-
-    ; write to stdout
-    prints msg, msg.len
-    ; write to file
     fprints [output_fd], msg, msg.len
-
-    ; close it 
     io_close [output_fd]
 
-    ; output_digit r11
-    ; output_newline
-    
-    output_sepline
-    printd 10012345
-    output_newline
-    mov rax, 1231231
-    printd rax
-    output_newline
-
-    ; exit(0)
     sys_exit EXIT_SUCCESS
 
 error_handler:
