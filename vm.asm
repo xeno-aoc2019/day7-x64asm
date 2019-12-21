@@ -8,24 +8,19 @@ default rel
 global _vm_init
 section .text
 
-get_opcode: ; rax -> rax
+get_opcode: ; rdx:rax -> rax (rdx=vm id, rax=index)
     push r14
-    ; mov r14, 8
-    ; mul r14 ; rax = rax*8
-    shl rax, 3 ; rax = rax * 8
-;    printd rax
-;    println
+    push r15
+    mov r15, rax
+    shl rdx, 3 ; rdx = rdx * 8
+    shl r15, 3 ; rax = rax * 8
     lea r14, [rel program_p]
-    add r14, rax
-    printd r14
-    println
+    add r14, rdx
     mov r14, [r14]
+    add r14, r15
     mov r14, [r14]
-    printd 20000
-    prints colon, 1
-    printd r14
-    println
     mov rax, r14 ; returning rax
+    pop r15
     pop r14
     ret
 
@@ -90,7 +85,8 @@ _vm_init: ; rax = *vm, *rcx = *size
  ;   call copy_program
     
 ;    xor rax,rax
-    mov rax, 1
+    mov rdx, 1
+    mov rax, 2
     call get_opcode
     ret
 
