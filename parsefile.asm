@@ -210,7 +210,7 @@ _parsefile: ; -> rax=*buffer, rcx=size
     io_open_infile [input_fd], input_fname
     memalloc [input_buf], 10000
     memalloc [output_buf], 10000
-    freads [input_fd], [input_buf], 15
+    freads [input_fd], [input_buf], 1500
     mov [input_size], rax
     mov r12, rax
     prints [input_buf], r12
@@ -224,7 +224,7 @@ _parsefile: ; -> rax=*buffer, rcx=size
     mov r14, rax     ; r14 = rax = input
 ;    debug_num 1900, rax ; input:int
     call disp_bytes  ; displays the bytes of rax
-    println
+    ; println
 
     debug_num 1905, r15 ; input:current_value
     mov rax, r15  ; current_value, starts at 0

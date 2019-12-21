@@ -4,6 +4,7 @@
 %include "debug.inc"
 %include "printd.inc"
 %include "memalloc.inc"
+%include "vm.inc"
 
 ; handle_error error_code errno
 %macro handle_error 2
@@ -58,11 +59,15 @@ start:
     printd rdx
     println
     mov rax, program_p
+    printd rax
+    println
     mov rax, [rax]
     add rax, 16
     mov rdx, [rax]
     printd rdx
     println
+    mov rax, program_p
+    vm_init ; rax = program_p, rcx=program_size
 
     io_open_infile [input_fd], input_txt
     jnc cont_0
