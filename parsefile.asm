@@ -9,7 +9,10 @@
 %define NEWLINE 10
 %define ZERO    0x30
 
-%macro debug_num 2 
+%macro debug_num 2
+; noop - so nice and quiet
+%endmacro
+%macro debug_num_disabled 2 
     push r10
     push r11
     push rax
@@ -60,10 +63,10 @@ disp_bytes: ; rax
     cmp rdx, COMMA
     je .comma
     sub rdx, ZERO
-    printd rdx
+    ; printd rdx
     jmp .printed
 .comma:
-    prints comma, 1
+    ; prints comma, 1
     jmp .printed
 .printed:
 ;    prints space, 1
@@ -142,8 +145,8 @@ process_bytes: ; rax = curr_val, rcx = int
 .comma:
     debug_num 390, rcx
     debug_num 391, rcx
-    prints comma, 1
-    println
+    ; prints comma, 1
+    ; println
     debug_num 393, rcx
     debug_num 400, rax
     call program_append ; rax
@@ -155,7 +158,7 @@ process_bytes: ; rax = curr_val, rcx = int
 .null:
     call program_append ; rax
     debug_num 500, rax
-    println
+    ; println
     mov rax, -1              ; returning -1 for end of file
 .end:
     pop r12
@@ -203,7 +206,7 @@ get_input: ; index = rax, output = rax
 
 
 ; parsefile 
-_parsefile:
+_parsefile: ; -> rax=*buffer, rcx=size
     io_open_infile [input_fd], input_fname
     memalloc [input_buf], 10000
     memalloc [output_buf], 10000
@@ -246,7 +249,8 @@ _parsefile:
     disp_program 1
     disp_program 2
     disp_program 3
-
+    mov rax, [output_buf]
+    mov rcx, [output_iter]
     ret
 
 

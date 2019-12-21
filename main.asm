@@ -38,6 +38,31 @@ start:
     println
 
     call _parsefile
+    mov [program_p], rax
+    mov [program_size], rcx
+    prints r_rax, 5
+    printd rax
+    println
+    prints r_rcx, 5
+    printd rcx
+    println
+    mov rax, program_p
+    mov rax, [rax]
+    mov rdx, [rax]
+    printd rdx
+    println
+    mov rax, program_p
+    mov rax, [rax]
+    add rax, 8
+    mov rdx, [rax]
+    printd rdx
+    println
+    mov rax, program_p
+    mov rax, [rax]
+    add rax, 16
+    mov rdx, [rax]
+    printd rdx
+    println
 
     io_open_infile [input_fd], input_txt
     jnc cont_0
@@ -98,12 +123,13 @@ input_buf_p:    dq    0x0 ; ptr to memory buffer for parsing
 input_p         dq    0x0 ; ptr to current pos in parsing
 input_buf_read: dq    0x0 ; size of input
 input_read_c:   dq    0x0 ; ptr to parsed program
-r_rax           dq    "rax: "
-r_rdi           dq    "rdi: "
-r_rdx           dq    "rdx: "
-r_r10           dq    "r10: "
-r_r11           dq    "r11: "
-r_r12           dq    "r12: "
+r_rax           db    "rax: "
+r_rdi           db    "rdi: "
+r_rdx           db    "rdx: "
+r_r10           db    "r10: "
+r_r11           db    "r11: "
+r_r12           db    "r12: "
+r_rcx           db    "rcx: "
 error_code      dq    0x0
 errno           dq    0x0
 error_code_lab  db    "error_code: "
@@ -111,4 +137,5 @@ errno_lab       db    "errno: "
 trace_lab       db    "trace: "
 program_p       dq    0x0
 program_iter    dq    0x0
+program_size    dq    0x0
  
