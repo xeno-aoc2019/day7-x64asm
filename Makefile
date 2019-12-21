@@ -15,3 +15,9 @@ main.o: main.asm
 
 main: main.o memalloc.o parsefile.o printd.o
 	ld -macosx_version_min 10.7.0 -no_pie -lSystem -o main main.o memalloc.o parsefile.o printd.o
+
+problem.o:
+	nasm -f macho64 problem.asm
+
+problem: problem.o printd.o
+	ld -macosx_version_min 10.7.0 -no_pie -lSystem -o problem problem.o printd.o
