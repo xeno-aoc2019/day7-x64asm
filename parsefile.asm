@@ -44,6 +44,7 @@ disp_bytes: ; rax
     je .null
     cmp rdx, COMMA
     je .comma
+    sub rdx, ZERO
     printd rdx
     jmp .printed
 .comma:
@@ -85,6 +86,7 @@ process_bytes: ; rax = curr_val, rsi = int
     cmp rdx, 0     ; if current_char = NULL goto null
     je .null 
     cmp rdx, 10    ; if current_char = NEWLINE goto null
+    je .null
 
     cmp rdx, COMMA ; if current_char = COMMA goto comma
     je .comma
@@ -94,7 +96,8 @@ process_bytes: ; rax = curr_val, rsi = int
     mul r12        ; curr_val = curr_val*10+current_char/digit
     add rax, rdx 
 
-    inc r10        ; byte_count++
+    inc r10         ; byte_count++
+    shr rsi, 8      ; removing int.last_byte
     jmp .loop       ; continue to next char
 
 .comma:
@@ -119,17 +122,17 @@ process_bytes: ; rax = curr_val, rsi = int
     inc r12                  ; output_iter++
     mov [output_iter], r12
 
-    prints null, 4
+    prints null, 2
     println
+    mov rax, -1              ; returning -1 for end of file
 .end:
     pop r12
     pop r11
     pop r10
     ret
 
-; parsefile rax=input_fd
+; parsefile 
 _parsefile:
-    debug_num 10000
     io_open_infile [input_fd], input_fname
     memalloc [input_buf], 1000
     memalloc [output_buf], 1000
@@ -150,7 +153,10 @@ _parsefile:
     xor rax, rax ; current_val = 0
     mov rsi, r12 ; int 
     call process_bytes
+    debug_num rax ; printing return value from process_bytes
     debug_num 10003
+
+
 .end_of_file:
 
 
