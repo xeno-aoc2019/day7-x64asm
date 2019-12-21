@@ -17,6 +17,7 @@ section .text
 
 ;  [fd] digits
 _fprintd: ; FD(rdi) num(rax)
+    push r11
     push r10
     push r9
     push r8
@@ -73,6 +74,7 @@ _fprintd: ; FD(rdi) num(rax)
     pop r8
     pop r9
     pop r10
+    pop r11
     ret
 
 section .data

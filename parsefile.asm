@@ -10,11 +10,11 @@
 %define ZERO    0x30
 
 %macro debug_num 2 
-;    printd r10
     push r10
     push r11
     push rax
     push rdx
+    push rcx
     mov r10, %1
     mov r11, %2
     prints debug_s, debug_s.len
@@ -22,6 +22,7 @@
     prints space, 1
     printd r11
     println
+    pop rcx
     pop rdx
     pop rax
     pop r11
@@ -40,6 +41,8 @@ disp_bytes: ; rax
     push r10
     push r11
     push r12
+    push r13
+    push r14
     xor r10, r10
     ; r10 = byte_count
 .loop:
@@ -72,70 +75,86 @@ disp_bytes: ; rax
     prints null, 4
 .end:
  ;   println
-    pop r10
-    pop r11
+    pop r14
+    pop r13
     pop r12
+    pop r11
+    pop r10
     ret
 
-process_bytes: ; rax = curr_val, rsi = int
+program_append: ; rax
+    push r10
+    push r12
+    push r13
+    debug_num 5555, rax
+    mov r10, output_buf    ; *input = output_buf
+    mov r12, [r10]         ; r12 = output_buf.deref
+    mov r13, [output_iter] ; load output_iter
+    add r12, r13           ;
+
+    add r13, 8             ; output_iter += 8  (save)
+    mov [output_iter], r13  ; 
+
+    mov [r12], rax        ; output_iter.deref = rax
+    pop r13
+    pop r12
+    pop r10
+    ret
+
+process_bytes: ; rax = curr_val, rcx = int
     push r10
     push r11
     push r12    
     xor r10, r10 
     mov r12, 10
+    mov r13, rcx
     ; r12 = CONST=10
     ; r10 = byte_count
     ; rax = curr_val
     ; rsi = int
-    ; rdx = current_char/digit
+    ; r13 = current_char/digit
 .loop:
-    cmp r10, 8 ; if byte_count = 8 goto end (byte finished)
+    cmp r10, 8     ; if byte_count = 8 goto end (byte finished)
     je .end
-    mov rdx, rsi   ; current_char = int.last_byte
-    and rdx, 255 
-    debug_num 100, rdx
-    cmp rdx, 0     ; if current_char = NULL goto null
+;    debug_num 99, rcx
+    mov r13, rcx   ; current_char = int.last_byte
+    and r13, 255 
+    debug_num 100, r13
+    cmp r13, 0     ; if current_char = NULL goto null
     je .null 
-    cmp rdx, 10    ; if current_char = NEWLINE goto null
+    cmp r13, 10    ; if current_char = NEWLINE goto null
     je .null
-    cmp rdx, COMMA ; if current_char = COMMA goto comma
+    cmp r13, COMMA ; if current_char = COMMA goto comma
     je .comma
-    sub rdx, ZERO ; current_char.int_from_ascii
+    sub r13, ZERO ; current_char.int_from_ascii
  
-    debug_num 200, rdx
+    debug_num 200, r13
 
     debug_num 210, rax
     mul r12        ; curr_val = curr_val*10+current_char/digit
-    add rax, rdx 
+    add rax, r13 
     debug_num 300, rax
 
     inc r10         ; byte_count++
-    shr rsi, 8      ; removing int.last_byte
+    shr rcx, 8      ; removing int.last_byte
     jmp .loop       ; continue to next char
 
 .comma:
-    mov r11, [output_buf]    ; output_buf[output_iter] = current_val
-    mov r12, [output_iter]
-    add r11, r12
-    mov [r11], rax
-
-    inc r12                  ; output_iter++
-    mov [output_iter], r12
-
+    debug_num 390, rcx
+    debug_num 391, rcx
+    prints comma, 1
+    println
+    debug_num 393, rcx
+    debug_num 400, rax
+    call program_append ; rax
+    shr rcx, 8
     xor rax, rax             ; current_val = 0 (next value)
     inc r10                  ; byte_count++
     jmp .loop                 ; continue to next char
 
 .null:
-    mov r11, [output_buf]    ; output_buf[output_iter] = current_val
-    mov r12, [output_iter]
-    add r11, r12
-    mov [r11], rax
-
-    inc r12                  ; output_iter++
-    mov [output_iter], r12
-
-    prints null, 2
+    call program_append ; rax
+    debug_num 500, rax
     println
     mov rax, -1              ; returning -1 for end of file
 .end:
@@ -195,18 +214,24 @@ _parsefile:
     println
     debug_num 1000, [input_size]
 
-    xor r14, r14 ; r14 = current_val
+    xor r15, r15 ; curr_value = 0
 .loop:
 
-    call next_input ; rax = input.iter.next
-    mov r14, rax ; r14 = rax = input
+    call next_input  ; rax = input.iter.next
+    mov r14, rax     ; r14 = rax = input
+;    debug_num 1900, rax ; input:int
     call disp_bytes  ; displays the bytes of rax
     println
 
-    mov rax, r14
-    mov rsi, r14 ; int 
+    debug_num 1905, r15 ; input:current_value
+    mov rax, r15  ; current_value, starts at 0
+    mov rcx, r14  ; int 
+;   debug_num 1906, rcx ; again...
+;   debug_num 1907, rcx ; again...
+;   debug_num 1910, r14
     call process_bytes
-    mov r14, rax
+;   debug_num 1908, rcx ; again
+    mov r15, rax ; current_value
     
     push rax
     debug_num 2000, rax

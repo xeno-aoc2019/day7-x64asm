@@ -15,19 +15,16 @@
 %define FD_STDERR        2
 
 %macro debug_num 2 
-;    printd r10
     push r10
     push r11
-    push rax
-    push rdx
     mov r10, %1
     mov r11, %2
-    printd r10
-    prints space, 1
+    ; printd r10
+    ; printd r10
+    fprints 1, space, 1
     printd r11
+    printd r10
     println
-    pop rdx
-    pop rax
     pop r11
     pop r10
 %endmacro
@@ -44,11 +41,15 @@
     push rdi
     push rsi
     push rdx
+    push r10
+    push r11
     mov rax, SYS_WRITE
     mov rdi, %1
     mov rsi, %2
     mov rdx, %3
     syscall
+    pop r11
+    pop r10
     pop rdx
     pop rsi
     pop rdi

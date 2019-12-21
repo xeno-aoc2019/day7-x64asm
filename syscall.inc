@@ -43,19 +43,29 @@
 
 ; fprints [fd] buffer length
 %macro fprints 3
+    push rcx
     push rax
     push rdi
     push rsi
     push rdx
+    push r8
+    push r9
+    push r10
+    push r11
     mov rax, SYS_WRITE
     mov rdi, %1
     mov rsi, %2
     mov rdx, %3
     syscall
+    pop r11
+    pop r10
+    pop r9
+    pop r8
     pop rdx
     pop rsi
     pop rdi
     pop rax
+    pop rcx
 %endmacro
 %macro prints 2  
     fprints FD_STDOUT, %1, %2
