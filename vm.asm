@@ -34,8 +34,8 @@ copy_program: ; rax = vm id (0-4), rcx = program size
     println
     mov r13, rcx ; r13 = program_size
     lea r10, [rel program_p]
- ;   add r10, r15 ; r10 = program_p[r15]
-    memalloc [program_p], r13 
+    add r10, r15 ; r10 = program_p[r15]
+    memalloc [r10], r13 
     xor r11, r11
     mov r12, 0
 .loop:
@@ -61,10 +61,13 @@ _vm_init: ; rax = *vm, *rcx = *size
     mov [program_size], rcx
     printd rax
     println
-    xor rax, rax ; rax = 0 (vm id)
+  ;  xor rax, rax ; vm = 0
+    mov rax, 0 ; vm = 1
     call copy_program
-    xor rax, rax
-    add rax, 1
+ ;   mov rax, -  ; vm = 1
+ ;   call copy_program
+    
+    xor rax,rax
     call get_opcode
     ret
 

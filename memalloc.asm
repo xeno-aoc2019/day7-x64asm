@@ -15,6 +15,7 @@ section .text
 
 ; _memalloc, rax=size => rax=ptr
 _memalloc: ; size -> ptr
+    push r10
     mov rsi, rax ; size
     mov rax, SYS_MMAP
     xor rdi, rdi ; memory address, 0 = let the system find some
@@ -24,6 +25,7 @@ _memalloc: ; size -> ptr
     xor r9,  r9 ; offset
     syscall
     jc fail
+    pop r10
     ret
 
 fail:
