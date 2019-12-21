@@ -17,6 +17,13 @@ section .text
 
 ;  [fd] digits
 _fprintd: ; FD(rdi) num(rax)
+    push r10
+    push r9
+    push r8
+    push rax
+    push rdi
+    push rcx
+    push rdx
     cmp rax, 0
     je .null
     mov rcx, rax
@@ -59,6 +66,13 @@ _fprintd: ; FD(rdi) num(rax)
     mov rsi, digits
     syscall
 .end:
+    pop rdx
+    pop rcx
+    pop rdi
+    pop rax
+    pop r8
+    pop r9
+    pop r10
     ret
 
 section .data

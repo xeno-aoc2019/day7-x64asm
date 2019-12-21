@@ -15,7 +15,7 @@
 default rel
 global _parsefile
 section .text
-;; open input file
+; open input file
 
 disp_bytes: ; rax
     push r10
@@ -24,6 +24,7 @@ disp_bytes: ; rax
     xor r10, r10
 .loop:
     cmp r10, 8
+    push r10
     je .end
     
     mov r12, rax ; store the value
@@ -32,12 +33,14 @@ disp_bytes: ; rax
     
     cmp rdx, 0
     je .null
-
+    push rdx
+    prints dot, 1
+    pop rdx
     printd rdx
     prints space, 1
     mov rax, r12 ; restore the value
     shr rax, 8 ; <- shift to next byte
-    
+    pop r10
     inc r10
     jmp .loop
 .null:
@@ -100,3 +103,4 @@ _9              dq    0x39
 space:          db    " "
 null:           db    "null"
 .len            db    $ - null
+dot:            db    "."
