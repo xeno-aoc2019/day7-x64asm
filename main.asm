@@ -2,7 +2,7 @@
 %include "syscall.inc"
 
 %include "debug.inc"
-%include "writenum.inc"
+%include "printd.inc"
 %include "memalloc.inc"
 
 ; handle_error error_code errno
@@ -40,10 +40,8 @@ cont_0:
     ; mov [input_fd], rax
 
     trace 100
-;    sys_allocmem [input_buf_p], 1000
     memalloc [input_buf_p], 1000
     memalloc [program_p], 1000
-;    sys_allocmem [program_p], 1000
     jnc cont_1
     handle_error 2, rax
 cont_1:    

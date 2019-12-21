@@ -2,7 +2,7 @@
 %include "syscall.inc"
 
 %include "debug.inc"
-%include "writenum.inc"
+; %include "writenum.inc"
 
 ; handle_error error_code errno
 
