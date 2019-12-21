@@ -3,6 +3,7 @@
 
 %include "debug.inc"
 %include "writenum.inc"
+%include "memalloc.inc"
 
 ; handle_error error_code errno
 %macro handle_error 2
@@ -18,8 +19,19 @@ section .text
 
 ;; open input file
 extern testprint
+extern _fprintd
+extern _memalloc
 
 start:
+    mov rax, 42
+    mov rdi, 1
+    call _fprintd
+    println
+    mov rax, 199199
+    mov rdi, 1
+    call _fprintd
+    println
+
     call testprint
     io_open_infile [input_fd], input_txt
     jnc cont_0
@@ -28,8 +40,10 @@ cont_0:
     ; mov [input_fd], rax
 
     trace 100
-    sys_allocmem [input_buf_p], 1000
-    sys_allocmem [program_p], 1000
+;    sys_allocmem [input_buf_p], 1000
+    memalloc [input_buf_p], 1000
+    memalloc [program_p], 1000
+;    sys_allocmem [program_p], 1000
     jnc cont_1
     handle_error 2, rax
 cont_1:    
@@ -107,7 +121,7 @@ input_txt:      db    "input.txt",0
 output_txt:     db    "output.txt",0
 input_fd:       dq    0x0
 output_fd:      dq    0x0
-digits:         db    "123456789_123456789_123456789"
+digits:         db    "0123456789_123456789_123456789"
 newline:        db    10
 comma           db    0x2c
 space           db    0x20

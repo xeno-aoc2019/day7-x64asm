@@ -12,7 +12,7 @@
     mov rax, SYS_WRITE
     mov rdi, %1
     mov rdx, 1 ; length 
-    mov rsi, hexdigits
+    mov rsi, digits
     pop r10
     add rsi, r10 
     syscall

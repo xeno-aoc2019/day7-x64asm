@@ -36,20 +36,6 @@
     syscall
 %endmacro
 
-; sys_allocmem [pointer address] bytes
-%macro sys_allocmem 2
-    mov rax, SYS_MMAP
-    xor rdi, rdi ; memory address, 0 = let the system find some
-    mov rsi, %2 ; size
-    mov rdx, 7 ; RWX 
-    mov r10, MAP_ANON_PRIV
-    mov r8,  -1 ; fd
-    xor r9,  r9 ; offset
-    syscall
-    mov %1, rax
-%endmacro
-
-
 ;;;;; IO CALLS
 
 
