@@ -28,6 +28,68 @@ section .text
 %define I_EQ      8
 %define I_HALT    99
 
+%macro to_instr 1 ; reg: convert registry to instr
+    push rcx
+    push rdx
+    push rax
+    mov rcx, 10
+    xor rdx, rdx
+    mov rax, %1
+    div rcx
+    mov %1, rdx
+    pop rax
+    pop rdx
+    pop rcx
+%endmacro
+
+%macro instr_flag_1 1
+    push rcx
+    push rdx
+    push rax
+    mov rcx, 100
+    xor rdx, rdx
+    mov rax, %1
+    div rcx
+    xor rdx, rdx
+    div 10
+    mov %1, rdx
+    pop rax
+    pop rdx
+    pop rcx
+%endmacro
+
+%macro instr_flag_2 1
+    push rcx
+    push rdx
+    push rax
+    mov rcx, 1000
+    xor rdx, rdx
+    mov rax, %1
+    div rcx
+    xor rdx, rdx
+    div 10
+    mov %1, rdx
+    pop rax
+    pop rdx
+    pop rcx
+%endmacro
+
+%macro instr_flag_3 1
+    push rcx
+    push rdx
+    push rax
+    mov rcx, 10000
+    xor rdx, rdx
+    mov rax, %1
+    div rcx
+    xor rdx, rdx
+    div 10
+    mov %1, rdx
+    pop rax
+    pop rdx
+    pop rcx
+%endmacro
+
 %macro vm_set_opcode 3
     push rdx
     push rax
@@ -183,26 +245,35 @@ _vm_run: ; rdx = vm_id
     prints colon, 1
     printd r13
     println
-    cmp r13, I_ADD
+    mov r10, r13
+    to_instr r10
+    printd 7770
+    prints colon,1
+    prints colon,1
+    printd r13
+    prints colon,1
+    printd r10
+    println
+    cmp r10, I_ADD
     je .i_add
-    cmp r13, I_MUL
+    cmp r10, I_MUL
     je .i_mul
-    cmp r13, I_INPUT
+    cmp r10, I_INPUT
     je .i_input
-    cmp r13, I_OUTPUT
+    cmp r10, I_OUTPUT
     je .i_output
-    cmp r13, I_JT
+    cmp r10, I_JT
     je .i_jt
-    cmp r13, I_JF
+    cmp r10, I_JF
     je .i_jf
-    cmp r13, I_LT
+    cmp r10, I_LT
     je .i_lt
-    cmp r13, I_EQ
+    cmp r10, I_EQ
     je .i_eq
-    cmp r13, I_HALT
+    cmp r10, I_HALT
     je .i_halt
     prints s_unknown_instr, s_unknown_instr.len
-    printd r13
+    printd r10
     println
     vm_set_opcode rdx, VM_ERR, 1
     ret
