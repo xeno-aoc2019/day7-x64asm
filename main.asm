@@ -59,7 +59,15 @@ start:
     printd r15
     println
     vm_run 0
-
+    vm_is_iowait 0
+    jrcxz .nope
+    printd 8880
+    println
+    jmp .the_end
+.nope:
+    printd 8881
+    println
+.the_end:
     sys_exit EXIT_SUCCESS
 
 error_handler:
