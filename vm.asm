@@ -6,7 +6,7 @@
 
 default rel
 global _vm_init, _vm_get_opcode, _vm_set_opcode, _vm_run, _vm_is_iowait,\
-       _vm_set_input
+       _vm_set_input, _vm_get_output
 section .text
 
 %define VM_IP       4000
@@ -82,7 +82,39 @@ section .text
     pop rdx
 %endmacro
 
-
+_dump_vm: ;rdx = vm_id
+    push r15
+    push r14
+    push r13
+    mov r15, rdx
+    prints s_vm, s_vm.len
+    printd r15
+    println
+    mov r14, [program_size]
+    shr r14, 3 ; byte to i64
+    printd r14
+    println
+    xor r13, r13
+.loop:
+    cmp r14,r13
+    je .program_end
+    vm_get_opcode r15, r13, r12
+    ; printd r13
+    ; prints colon,1
+    printd r12
+    prints space, 1
+    inc r13
+    jmp .loop
+.program_end:
+    println
+    prints s_ip, s_ip.len
+    vm_get_opcode r15, VM_IP, r13
+    printd r13
+    println
+    pop r13
+    pop r14
+    pop r15
+    ret
 
 _vm_get_opcode: ; rdx:rax -> rax (rdx=vm id, rax=index)
     push r14
@@ -261,6 +293,8 @@ _vm_run: ; rdx = vm_id
     mov r15, rdx
     vm_set_opcode rdx, VM_IOWAIT, 0
 .next:
+    mov rdx, r15
+    call _dump_vm
     vm_get_opcode rdx, VM_IP, r12
     vm_get_opcode rdx, r12, r13
     prints s_ip, s_ip.len
@@ -383,7 +417,7 @@ _vm_run: ; rdx = vm_id
     get_param r15, r13, 1, r11, r8
     inc r11
     get_param r15, r13, 2, r11, r9
-    cmp r9, 0x0
+    cmp r8, 0x0
     jz .i_jt_not
     vm_set_opcode r15, VM_IP, r9
     jmp .next
@@ -453,8 +487,6 @@ _vm_run: ; rdx = vm_id
     println
     ret
 
-    
-
 section .data
 orig_program_p:     dq  0x0 ; there's only one original program
 program_p           dq  0x0,0x0,0x0,0x0,0x0 ; but 5 copies
@@ -471,3 +503,11 @@ s_unknown_instr     db  "Unknown instruction: "
 comma               db  ","
 s_ip                db  "ip: "
 .len                equ $ - s_ip
+s_i_input           db  "input: "
+.len                equ $ - s_i_input
+s_i_jt              db  "jt: "
+.len                equ $ - s_i_jt
+s_i_jf              db  "jf: "
+.len                equ $ - s_i_jf
+s_vm                db  "vm: "
+.len                equ $ - s_vm

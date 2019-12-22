@@ -31,6 +31,12 @@ extern _vm_is_iowait
     pop rdx
 %endmacro
 
+%macro vm_get_output 2 ; vm_id, output_reg
+    mov rdx, %1
+    call _vm_get_output ; rdx = vm_id -> rax = output, cf=error
+    mov %2, rax
+%endmacro
+
 %macro vm_is_iowait 1
     push rdx
     mov rdx, %1

@@ -40,36 +40,42 @@ start:
     call load_program
     init_vm 0
     init_vm 1
-    vm_get_opcode 0, 0
-    mov r15, rax
-    printd 6000
-    prints comma, 1
-    printd r15
-    println
-    vm_get_opcode 0, 1
-    mov r15, rax
-    printd 6001
-    prints comma, 1
-    printd r15
-    println
-    vm_get_opcode 1, 2
-    mov r15, rax
-    printd 6002
-    prints comma, 1
-    printd r15
-    println
+    init_vm 2
+    init_vm 3
+    init_vm 4
+
     vm_run 0
-    vm_is_iowait 0
-    jrcxz .nope
-    printd 8880
-    vm_set_input 0, 1
+    vm_set_input 0, 4
     vm_run 0
+    vm_set_input 0, 0
+    vm_run 0
+    vm_get_output 0, r14
+    vm_run 1
+    vm_set_input 1, 3
+    vm_run 1
+    vm_set_input 1, r14
+    vm_run 1
+    vm_get_output 1, r14
+    vm_run 2
+    vm_set_input 2, 2
+    vm_run 2
+    vm_set_input 2, r14
+    vm_run 2
+    vm_get_output 2, r14
+    vm_run 3
+    vm_set_input 3, 1
+    vm_run 3
+    vm_set_input 3, r14
+    vm_run 3
+    vm_get_output 3, r14
+    vm_run 4
+    vm_set_input 4, 0
+    vm_run 4
+    vm_set_input 4, r14
+    vm_run 4
+    vm_get_output 0, r14
+    printd r14
     println
-    jmp .the_end
-.nope:
-    printd 8881
-    println
-.the_end:
     sys_exit EXIT_SUCCESS
 
 error_handler:
