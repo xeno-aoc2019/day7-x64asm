@@ -247,21 +247,21 @@ _vm_get_param: ; rdx=vm id, rax=instruction, rsi=param#, rcx=param_adr -> rax
     xor rdx, rdx
     ; rax=instruction, so rdx:rax can be divided
     div r13
-    mov rax, rdx
-    xor rdx, rdx ; rdi:rax = remainer
+    xor rdx, rdx ; rdx:rax = remainer:value
     mov r13, 10
     div r13 ; rdx:rax / 10, rdx will have the flag
     mov rcx, rdx ; rcx = zero if flag not set (reference)
-    
     ; fetch the immediate value
     vm_get_opcode r15, r11, r9
+    mov rcx, rdx
     jrcxz .reference
     jmp .retvalue
-.reference:
+.reference:    
     vm_get_opcode r15, r9, r9 ; dereference
+    jmp .end
 .retvalue:
-    mov rax, r9 ; return rax = r9
 .end:
+    mov rax, r9 ; return rax = r9
     pop r9
     pop r11
     pop r13
@@ -341,6 +341,33 @@ _vm_run: ; rdx = vm_id
     inc r11
     vm_get_opcode r15, r11, r8
     vm_get_opcode r15, r8, r8
+
+    printd 91900
+    prints comma, 1
+    printd r8
+    println
+
+    ; rdx=vm id, rax=instruction, rsi=param#, rcx=param_adr -> rax
+    push rdi
+    push rax
+    push rdi
+    push rcx
+    mov rdi, r15
+    mov rax, r13
+    mov rsi, 1
+    mov rcx, r11
+    call _vm_get_param
+    mov r8, rax
+    pop rcx
+    pop rdi
+    pop rax
+    pop rdi
+
+    printd 91901
+    prints comma, 1
+    printd r8
+    println
+
     inc r11
     vm_get_opcode r15, r11, r9
     vm_get_opcode r15, r9, r9
