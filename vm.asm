@@ -9,14 +9,14 @@ global _vm_init, _vm_get_opcode, _vm_set_opcode, _vm_run, _vm_is_iowait,\
        _vm_set_input
 section .text
 
-%define VM_IP       400
-%define VM_HALTED   401
-%define VM_IOWAIT   402
-%define VM_ERR      403
-%define VM_INPUT    404
-%define VM_INPUT_F  405
-%define VM_OUTPUT   406
-%define VM_OUTPUT_F 407
+%define VM_IP       4000
+%define VM_HALTED   4001
+%define VM_IOWAIT   4002
+%define VM_ERR      4003
+%define VM_INPUT    4004
+%define VM_INPUT_F  4005
+%define VM_OUTPUT   4006
+%define VM_OUTPUT_F 4007
 
 %define I_ADD     1
 %define I_MUL     2
@@ -36,54 +36,6 @@ section .text
     xor rdx, rdx
     mov rax, %1
     div rcx
-    mov %1, rdx
-    pop rax
-    pop rdx
-    pop rcx
-%endmacro
-
-%macro instr_flag_1 1
-    push rcx
-    push rdx
-    push rax
-    mov rcx, 100
-    xor rdx, rdx
-    mov rax, %1
-    div rcx
-    xor rdx, rdx
-    div 10
-    mov %1, rdx
-    pop rax
-    pop rdx
-    pop rcx
-%endmacro
-
-%macro instr_flag_2 1
-    push rcx
-    push rdx
-    push rax
-    mov rcx, 1000
-    xor rdx, rdx
-    mov rax, %1
-    div rcx
-    xor rdx, rdx
-    div 10
-    mov %1, rdx
-    pop rax
-    pop rdx
-    pop rcx
-%endmacro
-
-%macro instr_flag_3 1
-    push rcx
-    push rdx
-    push rax
-    mov rcx, 10000
-    xor rdx, rdx
-    mov rax, %1
-    div rcx
-    xor rdx, rdx
-    div 10
     mov %1, rdx
     pop rax
     pop rdx
@@ -209,7 +161,7 @@ copy_program: ; rax = vm id (0-4), rcx = program size
     mov r13, rcx ; r13 = program_size
     lea r10, [rel program_p]
     add r10, r15 ; r10 = program_p[r15]
-    memalloc [r10], 2000 ; r13 for the program, but registers at the end
+    memalloc [r10], 100000 ; r13 for the program, but registers at the end
     xor r11, r11
     mov r12, 0
 .loop:

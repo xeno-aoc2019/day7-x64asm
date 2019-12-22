@@ -208,9 +208,9 @@ get_input: ; index = rax, output = rax
 ; parsefile 
 _parsefile: ; -> rax=*buffer, rcx=size
     io_open_infile [input_fd], input_fname
-    memalloc [input_buf], 10000
-    memalloc [output_buf], 10000
-    freads [input_fd], [input_buf], 1500
+    memalloc [input_buf], 100000
+    memalloc [output_buf], 100000
+    freads [input_fd], [input_buf], 15000
     mov [input_size], rax
     mov r12, rax
     prints [input_buf], r12
