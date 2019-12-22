@@ -379,13 +379,71 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IP, r11
     jmp .next  
 .i_jt:
-
+    inc r11
+    get_param r15, r13, 1, r11, r8
+    inc r11
+    get_param r15, r13, 2, r11, r9
+    cmp r9, 0x0
+    jz .i_jt_not
+    vm_set_opcode r15, VM_IP, r9
+    jmp .next
+.i_jt_not:
+    inc r11
+    vm_set_opcode r15, VM_IP, r11
+    jmp .next
 .i_jf:
-
+    inc r11
+    get_param r15, r13, 1, r11, r8
+    inc r11
+    get_param r15, r13, 2, r11, r9
+    cmp r9, 0x0
+    jnz .i_jf_not
+    vm_set_opcode r15, VM_IP, r9
+    jmp .next
+.i_jf_not:
+    inc r11
+    vm_set_opcode r15, VM_IP, r11
+    jmp .next
 .i_lt:
-
+    mov r11, r12
+    inc r11
+    get_param r15, r13, 1, r11, r8
+    inc r11
+    get_param r15, r13, 2, r11, r9
+    inc r11
+    ; #3 is not dereferencable
+    vm_get_opcode r15, r11, r10
+    sub r9, r8
+    and r9, 2<<63
+    cmp r9,0
+    je .i_lt_notless
+    vm_set_opcode r15, r10, 0
+    jmp .i_lt_done
+.i_lt_notless:
+    vm_set_opcode r15, r10, 1
+.i_lt_done:
+    inc r11
+    vm_set_opcode r15, VM_IP, r11
+    jmp .next
 .i_eq:
-
+    mov r11, r12
+    inc r11
+    get_param r15, r13, 1, r11, r8
+    inc r11
+    get_param r15, r13, 2, r11, r9
+    inc r11
+    ; #3 is not dereferencable
+    vm_get_opcode r15, r11, r10
+    cmp r8,r9
+    je .i_eq_eq
+    vm_set_opcode r15, r10, 0
+    jmp .i_eq_done
+.i_eq_eq:
+    vm_set_opcode r15, r10, 1
+.i_eq_done:
+    inc r11
+    vm_set_opcode r15, VM_IP, r11
+    jmp .next
 .i_halt:
     vm_set_opcode r15, VM_HALTED, 0x1
     vm_get_opcode r15, 0x0, r15
