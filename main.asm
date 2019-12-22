@@ -46,8 +46,6 @@ start:
     prints comma, 1
     printd r15
     println
-    ; vm_get_opcode 0, 1
-    ; vm_set_opcode 0, 1, 93
     vm_get_opcode 0, 1
     mov r15, rax
     printd 6001
@@ -60,8 +58,6 @@ start:
     prints comma, 1
     printd r15
     println
-    vm_set_opcode 0, 1, 12
-    vm_set_opcode 0, 2, 2
     vm_run 0
 
     sys_exit EXIT_SUCCESS

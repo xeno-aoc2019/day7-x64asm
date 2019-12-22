@@ -8,10 +8,14 @@ default rel
 global _vm_init, _vm_get_opcode, _vm_set_opcode, _vm_run
 section .text
 
-%define VM_IP     400
-%define VM_HALTED 401
-%define VM_IOWAIT 402
-%define VM_ERR    403
+%define VM_IP       400
+%define VM_HALTED   401
+%define VM_IOWAIT   402
+%define VM_ERR      403
+%define VM_INPUT    404
+%define VM_INPUT_F  405
+%define VM_OUTPUT   406
+%define VM_OUTPUT_F 407
 
 %define I_ADD     1
 %define I_MUL     2
@@ -79,6 +83,45 @@ _vm_set_opcode: ;rdx:rax=rcx
     pop r14
     ret
 
+_vm_set_input: ; rdx = vm_id, rax = input
+    mov rcx, rax
+    mov rax, VM_INPUT
+    call _vm_set_opcode
+    mov rax, VM_INPUT_F
+    mov rcx, 0x1
+    call _vm_set_opcode
+    ret
+
+_vm_get_input: ; rdx = vm_id -> rax = output, cf=error
+    mov rax, VM_INPUT_F
+    call _vm_get_opcode
+    mov rcx, rax
+    jrcxz .no_output
+    mov rax, VM_OUTPUT
+    call _vm_get_opcode
+    clc
+    ret
+.no_output:
+    stc
+    ret
+
+_vm_get_output: ; rdx = vm_id -> rax = output, cf=error
+    mov rax, VM_OUTPUT_F
+    call _vm_get_opcode
+    mov rcx, rax
+    jrcxz .no_output
+    mov rax, VM_OUTPUT
+    call _vm_get_opcode
+    clc
+    ret
+.no_output:
+    stc
+    ret
+
+_vm_is_iowait: ; rdx = vm_id -> rcx
+    vm_get_opcode rdx, VM_IOWAIT, rcx
+    ret
+
 copy_program: ; rax = vm id (0-4), rcx = program size
     push r15
     shl rax, 3 ; rax = rax * 8 (vm id to byte offset)
@@ -120,6 +163,8 @@ _vm_init: ; rax = *program, *rcx = *size, rdx = vm id
     vm_set_opcode r15, VM_HALTED, 0
     vm_set_opcode r15, VM_IOWAIT, 0
     vm_set_opcode r15, VM_ERR, 0
+ ;   vm_set_opcode r15, VM_INPUT_F, 0
+ ;   vm_set_opcode r15, VM_OUTPUT_F, 0
     ret
 
 _vm_run: ; rdx = vm_id
@@ -218,7 +263,19 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IP, r11
     jmp .next
 .i_input:
-
+    vm_get_opcode r15, VM_INPUT_F, rcx
+    jrcxz .i_input_missing
+    vm_set_opcode r15, VM_INPUT_F, 0 ; consuming the input
+    vm_get_opcode r15, VM_INPUT, rcx
+    inc r11
+    vm_get_opcode r15, r11, r8
+    vm_set_opcode r15, r8, rcx
+    inc r11
+    vm_set_opcode r15, VM_IP, r11
+    jmp .next
+.i_input_missing:
+    vm_set_opcode r15, VM_IOWAIT, 1 ; waiting for input
+    ret ; exit, will resume when called again
 .i_output:
 
 .i_jt:
