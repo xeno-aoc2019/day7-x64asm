@@ -62,6 +62,8 @@ start:
     vm_is_iowait 0
     jrcxz .nope
     printd 8880
+    vm_set_input 0, 1
+    vm_run 0
     println
     jmp .the_end
 .nope:
