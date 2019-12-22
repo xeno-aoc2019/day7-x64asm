@@ -32,7 +32,7 @@ section .text
     push rcx
     push rdx
     push rax
-    mov rcx, 10
+    mov rcx, 100
     xor rdx, rdx
     mov rax, %1
     div rcx
@@ -111,7 +111,24 @@ section .text
     mov %3, rax
     pop rdx
 %endmacro
-    
+
+; getmacro vm-id, instr, flag#, param_adr, (output-reg;)
+%macro get_param 5 ;
+    push rdx
+    push rdi
+    push rax
+    push rcx
+    mov rdi, %1
+    mov rax, %2
+    mov rsi, %3
+    mov rcx, %4
+    call _vm_get_param
+    mov %5, rax
+    pop rcx
+    pop rax
+    pop rdi
+    pop rdx
+%endmacro
 
 
 
@@ -339,39 +356,12 @@ _vm_run: ; rdx = vm_id
     println
     mov r11, r12
     inc r11
-    vm_get_opcode r15, r11, r8
-    vm_get_opcode r15, r8, r8
-
-    printd 91900
-    prints comma, 1
-    printd r8
-    println
-
     ; rdx=vm id, rax=instruction, rsi=param#, rcx=param_adr -> rax
-    push rdi
-    push rax
-    push rdi
-    push rcx
-    mov rdi, r15
-    mov rax, r13
-    mov rsi, 1
-    mov rcx, r11
-    call _vm_get_param
-    mov r8, rax
-    pop rcx
-    pop rdi
-    pop rax
-    pop rdi
-
-    printd 91901
-    prints comma, 1
-    printd r8
-    println
-
+    get_param r15, r13, 1, r11, r8
     inc r11
-    vm_get_opcode r15, r11, r9
-    vm_get_opcode r15, r9, r9
+    get_param r15, r13, 2, r11, r9
     inc r11
+    ; target not dereferencable
     vm_get_opcode r15, r11, r10
     add r9, r8
     vm_set_opcode r15, r10, r9
@@ -389,12 +379,11 @@ _vm_run: ; rdx = vm_id
     println
     mov r11, r12
     inc r11
-    vm_get_opcode r15, r11, r8
-    vm_get_opcode r15, r8, r8
+    get_param r15, r13, 1, r11, r8
     inc r11
-    vm_get_opcode r15, r11, r9
-    vm_get_opcode r15, r9, r9
+    get_param r15, r13, 2, r11, r9
     inc r11
+    ; #3 is not dereferencable
     vm_get_opcode r15, r11, r10
     push rax
     push rdx
@@ -430,7 +419,13 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IOWAIT, 1 ; waiting for input
     ret ; exit, will resume when called again
 .i_output:
-    
+    inc r11
+    get_param r15, r13, 1, r11, r8
+    vm_set_opcode r15, VM_OUTPUT, r8
+    vm_set_opcode r15, VM_OUTPUT_F, 1
+    inc r11
+    vm_set_opcode r15, VM_IP, r11
+    jmp .next  
 .i_jt:
 
 .i_jf:
