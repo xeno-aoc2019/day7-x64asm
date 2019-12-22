@@ -23,78 +23,41 @@ extern _fprintd
 extern _memalloc
 extern _parsefile
 
-start:
-    trace 0
-    trace -1
-
-    printd 42
-    println
-    mov r14, rsp
-    printd r14
-    println
-    printd -1
-    println
-    mov r14, rsp
-    printd r14
-    println
-
+load_program:
     call _parsefile
     mov [program_p], rax
     mov [program_size], rcx
-    prints r_rax, 5
-    printd rax
-    println
-    prints r_rcx, 5
-    printd rcx
-    println
+    ret
+
+%macro init_vm 1
+    mov rcx, [program_size]
     mov rax, program_p
-    mov rax, [rax]
-    mov rdx, [rax]
-    printd rdx
+    mov rdx, %1 ; vm_id
+    vm_init ; rax = program_p, rcx=program_size, rdx=vm_id
+%endmacro
+
+start:
+    call load_program
+    init_vm 0
+    init_vm 1
+    vm_get_opcode 0, 0
+    mov r15, rax
+    printd 6000
+    prints comma, 1
+    printd r15
     println
-    mov rax, program_p
-    mov rax, [rax]
-    add rax, 8
-    mov rdx, [rax]
-    printd rdx
+    vm_get_opcode 0, 1
+    mov r15, rax
+    printd 6001
+    prints comma, 1
+    printd r15
     println
-    mov rax, program_p
-    printd rax
+    vm_get_opcode 1, 2
+    mov r15, rax
+    printd 6002
+    prints comma, 1
+    printd r15
     println
-    mov rax, [rax]
-    add rax, 16
-    mov rdx, [rax]
-    printd rdx
-    println
-    mov rax, program_p
-    vm_init ; rax = program_p, rcx=program_size
-
-    io_open_infile [input_fd], input_txt
-    jnc cont_0
-    handle_error 1, rax
-cont_0:
-    ; mov [input_fd], rax
-
-    trace 100
-    memalloc [input_buf_p], 1000
-    ; memalloc [program_p], 1000
-    ; jnc cont_1
-    ; handle_error 2, rax
-; cont_1:    
-  ;   freads [input_fd], input_buf_p, 20
- ;   jnc cont_2
-;    handle_error 3, rax
-; cont_2:
-
-    ; write input_buf_p[...r12]
-
-
-; cont_3:
- ;   printd r12
- 
-    io_open_outfile [output_fd], output_txt
-    fprints [output_fd], msg, msg.len
-    io_close [output_fd]
 
     sys_exit EXIT_SUCCESS
 

@@ -5,10 +5,10 @@
 %include "syscall.inc"
 
 default rel
-global _vm_init
+global _vm_init, _vm_get_opcode
 section .text
 
-get_opcode: ; rdx:rax -> rax (rdx=vm id, rax=index)
+_vm_get_opcode: ; rdx:rax -> rax (rdx=vm id, rax=index)
     push r14
     push r15
     mov r15, rax
@@ -73,21 +73,17 @@ copy_program: ; rax = vm id (0-4), rcx = program size
     ret
 
 
-_vm_init: ; rax = *vm, *rcx = *size
+_vm_init: ; rax = *program, *rcx = *size, rdx = vm id
     mov [orig_program_p], rax
     mov [program_size], rcx
+    mov r15, rdx
     printd rax
     println
-  ;  xor rax, rax ; vm = 0
-    mov rax, 1 ; vm = 1
+    mov rax, r15 ; vm = 1
     call copy_program
- ;   mov rax, -  ; vm = 1
- ;   call copy_program
-    
-;    xor rax,rax
-    mov rdx, 1
-    mov rax, 2
-    call get_opcode
+;    mov rdx, r15
+;    mov rax, 2
+;    call _vm_get_opcode
     ret
 
 section .data
