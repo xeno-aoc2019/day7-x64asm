@@ -213,6 +213,60 @@ copy_program: ; rax = vm id (0-4), rcx = program size
     pop r15
     ret
 
+_vm_get_param: ; rdx=vm id, rax=instruction, rsi=param#, rcx=param_adr -> rax
+    push r15
+    push r13
+    push r11
+    push r9
+    mov r15, rdx
+    mov r11, rcx
+    xor rdx, rdx
+    ; rdx:rax = instr
+    cmp rsi, 1
+    je .param1
+    cmp rsi, 2
+    je .param2
+    cmp rsi, 3
+    je .param3
+    printd 32202
+    prints comma, 1
+    printd rsi
+    println
+    mov r13, 0 ; causes a division by zero
+    jmp .selected
+.param1:
+    mov r13, 100
+    jmp .selected
+.param2:
+    mov r13, 1000
+    jmp .selected
+.param3:
+    mov r13, 10000
+    jmp .selected
+.selected:
+    xor rdx, rdx
+    ; rax=instruction, so rdx:rax can be divided
+    div r13
+    mov rax, rdx
+    xor rdx, rdx ; rdi:rax = remainer
+    mov r13, 10
+    div r13 ; rdx:rax / 10, rdx will have the flag
+    mov rcx, rdx ; rcx = zero if flag not set (reference)
+    
+    ; fetch the immediate value
+    vm_get_opcode r15, r11, r9
+    jrcxz .reference
+    jmp .retvalue
+.reference:
+    vm_get_opcode r15, r9, r9 ; dereference
+.retvalue:
+    mov rax, r9 ; return rax = r9
+.end:
+    pop r9
+    pop r11
+    pop r13
+    pop r15
+    ret
 
 _vm_init: ; rax = *program, *rcx = *size, rdx = vm id
     mov [orig_program_p], rax
@@ -226,8 +280,8 @@ _vm_init: ; rax = *program, *rcx = *size, rdx = vm id
     vm_set_opcode r15, VM_HALTED, 0
     vm_set_opcode r15, VM_IOWAIT, 0
     vm_set_opcode r15, VM_ERR, 0
- ;   vm_set_opcode r15, VM_INPUT_F, 0
- ;   vm_set_opcode r15, VM_OUTPUT_F, 0
+    vm_set_opcode r15, VM_INPUT_F, 0
+    vm_set_opcode r15, VM_OUTPUT_F, 0
     ret
 
 _vm_run: ; rdx = vm_id
@@ -349,7 +403,7 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IOWAIT, 1 ; waiting for input
     ret ; exit, will resume when called again
 .i_output:
-
+    
 .i_jt:
 
 .i_jf:
