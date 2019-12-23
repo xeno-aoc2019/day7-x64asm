@@ -73,7 +73,7 @@ start:
     vm_run 4
     vm_set_input 4, r14
     vm_run 4
-    vm_get_output 0, r14
+    vm_get_output 4, r14
     printd r14
     println
     sys_exit EXIT_SUCCESS

@@ -108,7 +108,24 @@ _dump_vm: ;rdx = vm_id
 .program_end:
     println
     prints s_ip, s_ip.len
+    prints tab, 1
     vm_get_opcode r15, VM_IP, r13
+    printd r13
+    println
+    prints s_i_input, s_i_input.len
+    prints tab, 1
+    vm_get_opcode r15, VM_INPUT_F, r13
+    printd r13
+    prints comma, 1
+    vm_get_opcode r15, VM_INPUT, r13
+    printd r13
+    println
+    prints s_i_output, s_i_output.len
+    prints tab, 1
+    vm_get_opcode r15, VM_OUTPUT_F, r13
+    printd r13
+    prints comma, 1
+    vm_get_opcode r15, VM_OUTPUT, r13
     printd r13
     println
     pop r13
@@ -119,6 +136,7 @@ _dump_vm: ;rdx = vm_id
 _vm_get_opcode: ; rdx:rax -> rax (rdx=vm id, rax=index)
     push r14
     push r15
+    push rdx
     mov r15, rax
     shl rdx, 3 ; rdx = rdx * 8
     shl r15, 3 ; rax = rax * 8
@@ -128,6 +146,7 @@ _vm_get_opcode: ; rdx:rax -> rax (rdx=vm id, rax=index)
     add r14, r15
     mov r14, [r14]
     mov rax, r14 ; returning rax
+    pop rdx
     pop r15
     pop r14
     ret
@@ -148,12 +167,25 @@ _vm_set_opcode: ;rdx:rax=rcx
     ret
 
 _vm_set_input: ; rdx = vm_id, rax = input
+    push r15
+    mov r15, rdx
     mov rcx, rax
+    push rdx
+    printd 99001
+    prints colon, 1
+    printd r15
+    prints colon, 1
+    printd rcx
+    println
+    pop rdx
     mov rax, VM_INPUT
+    ;rdx:rax=rcx
     call _vm_set_opcode
     mov rax, VM_INPUT_F
     mov rcx, 0x1
+    mov rdx, r15
     call _vm_set_opcode
+    pop r15
     ret
 
 _vm_get_input: ; rdx = vm_id -> rax = output, cf=error
@@ -170,16 +202,34 @@ _vm_get_input: ; rdx = vm_id -> rax = output, cf=error
     ret
 
 _vm_get_output: ; rdx = vm_id -> rax = output, cf=error
-    mov rax, VM_OUTPUT_F
-    call _vm_get_opcode
-    mov rcx, rax
+    push rdx
+    push r15
+    push r13
+    push r12
+    mov r15, rdx
+    prints s_get_output, s_get_output.len
+    printd r15
+    println
+    vm_get_opcode r15, VM_OUTPUT_F, r12
+    vm_get_opcode r15, VM_OUTPUT, r13
+    mov rcx, r12
     jrcxz .no_output
-    mov rax, VM_OUTPUT
-    call _vm_get_opcode
-    clc
-    ret
+    vm_set_opcode r15, VM_OUTPUT_F, 0 ; consuming the output
+    clc ; clearing carry (= error)
+    jmp .end
 .no_output:
-    stc
+    stc ; setting carry (= error)
+.end:
+    prints s_get_output, s_get_output.len
+    printd 999
+    prints colon, 1
+    printd r13
+    println
+    mov rax, r13
+    pop r12
+    pop r13
+    pop r15
+    pop rdx
     ret
 
 _vm_is_iowait: ; rdx = vm_id -> rcx
@@ -291,7 +341,7 @@ _vm_run: ; rdx = vm_id
     ; r13 = instruction
     ; r14 = index
     mov r15, rdx
-    vm_set_opcode rdx, VM_IOWAIT, 0
+    vm_set_opcode r15, VM_IOWAIT, 0
 .next:
     mov rdx, r15
     call _dump_vm
@@ -336,10 +386,10 @@ _vm_run: ; rdx = vm_id
     ret
     ; ... and if we're still here, somethings wrong
 .i_add:
-    printd 7001
-    prints colon, 1
-    printd r12
-    println
+;    printd 7001
+;    prints colon, 1
+;    printd r12
+;    println
     mov r11, r12
     inc r11
     ; rdx=vm id, rax=instruction, rsi=param#, rcx=param_adr -> rax
@@ -351,18 +401,18 @@ _vm_run: ; rdx = vm_id
     vm_get_opcode r15, r11, r10
     add r9, r8
     vm_set_opcode r15, r10, r9
-    printd r8
-    prints comma, 1
-    printd r9
-    prints comma, 1
-    printd r10  
-    println
+;    printd r8
+;    prints comma, 1
+;    printd r9
+;    prints comma, 1
+;    printd r10  
+;    println
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next
 .i_mul:
-    printd 7002
-    println
+ ;   printd 7002
+ ;   println
     mov r11, r12
     inc r11
     get_param r15, r13, 1, r11, r8
@@ -381,16 +431,17 @@ _vm_run: ; rdx = vm_id
     pop rax
 ;    add r9, r8
     vm_set_opcode r15, r10, r9
-    printd r8
-    prints comma, 1
-    printd r9
-    prints comma, 1
-    printd r10  
-    println
+;   printd r8
+;    prints comma, 1
+;    printd r9
+;    prints comma, 1
+;    printd r10  
+;    println
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next
 .i_input:
+    mov r11, r12
     vm_get_opcode r15, VM_INPUT_F, rcx
     jrcxz .i_input_missing
     vm_set_opcode r15, VM_INPUT_F, 0 ; consuming the input
@@ -403,16 +454,22 @@ _vm_run: ; rdx = vm_id
     jmp .next
 .i_input_missing:
     vm_set_opcode r15, VM_IOWAIT, 1 ; waiting for input
+;    printd 122123
+;    println
     ret ; exit, will resume when called again
 .i_output:
+    mov r11, r12
     inc r11
     get_param r15, r13, 1, r11, r8
+;    prints s_outputting, s_outputting.len
+;    printd r8
     vm_set_opcode r15, VM_OUTPUT, r8
     vm_set_opcode r15, VM_OUTPUT_F, 1
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next  
 .i_jt:
+    mov r11, r12
     inc r11
     get_param r15, r13, 1, r11, r8
     inc r11
@@ -422,10 +479,12 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IP, r9
     jmp .next
 .i_jt_not:
+    mov r11, r12
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next
 .i_jf:
+    mov r11, r12
     inc r11
     get_param r15, r13, 1, r11, r8
     inc r11
@@ -435,6 +494,7 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IP, r9
     jmp .next
 .i_jf_not:
+    mov r11, r12
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next
@@ -505,9 +565,16 @@ s_ip                db  "ip: "
 .len                equ $ - s_ip
 s_i_input           db  "input: "
 .len                equ $ - s_i_input
+s_i_output          db  "output: "
+.len                equ $ - s_i_output
 s_i_jt              db  "jt: "
 .len                equ $ - s_i_jt
 s_i_jf              db  "jf: "
 .len                equ $ - s_i_jf
 s_vm                db  "vm: "
 .len                equ $ - s_vm
+s_outputting        db  "outputting: "
+.len                equ $ - s_outputting
+tab                 db  9
+s_get_output        db  "get_output: "
+.len                equ $ - s_get_output
