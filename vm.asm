@@ -6,7 +6,7 @@
 
 default rel
 global _vm_init, _vm_get_opcode, _vm_set_opcode, _vm_run, _vm_is_iowait,\
-       _vm_set_input, _vm_get_output
+       _vm_is_halted, _vm_set_input, _vm_get_output
 section .text
 
 %define VM_IP       4000
@@ -230,6 +230,10 @@ _vm_is_iowait: ; rdx = vm_id -> rcx
     vm_get_opcode rdx, VM_IOWAIT, rcx
     ret
 
+_vm_is_halted: ; rdx = vm_id -> rcx
+    vm_get_opcode rdx, VM_HALTED, rcx
+    ret
+
 free_vm:
     lea r10, [rel program_p]
     add r10, r15 ; r10 = program_p[r15]
@@ -329,8 +333,6 @@ _vm_init: ; rax = *program, *rcx = *size, rdx = vm id
     mov [orig_program_p], rax
     mov [program_size], rcx
     mov r15, rdx
-    printd rax
-    println
     mov rax, r15 ; vm = 1
     call copy_program   
     vm_set_opcode r15, VM_IP, 0
