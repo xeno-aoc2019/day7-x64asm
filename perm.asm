@@ -102,20 +102,22 @@ _print_5_bits_rev: ; rax
     ret
 
 _perm_5_of_0_4: ; rdx = callback(rax)
+    xor r15, r15 ; flags = 00000
     xor r10, r10 ; r10 = 0
 .loop1:          ; do (loop1)
  
     make_bit r9, r10b ; r15[r10] = 1
+    mov rax, r15
     or r15, r9
     push r9
 
     xor r11, r11
 .loop2:
-    make_bit r9, r11b ; r15[r11] = 1
+    make_bit r9, r11b 
 
     mov r8, r9 ; if r15[r11] is set
     and r8, r15
-     cmp r8, 0
+    cmp r8, 0
     jnz .loop2_end
  
     or r15, r9
@@ -157,12 +159,9 @@ _perm_5_of_0_4: ; rdx = callback(rax)
     or r15, r9
     push r9
 
- ;   encode5 rax, r10, r11, r12, r13, r14
-    ; call _print_num
  ;   call rdx
  ;   prints values_lab, values_lab.len
     push rdx
-    sequence5 rax, r10, r11, r12, r13, r14
     push rax
     push r8
     push r9
@@ -172,6 +171,9 @@ _perm_5_of_0_4: ; rdx = callback(rax)
     push r13
     push r14
     push r15
+    sequence5 rax, r10, r11, r12, r13, r14
+    ; call _print_num
+    ; println
     call rdx
     pop r15
     pop r14
@@ -223,7 +225,6 @@ _perm_5_of_0_4: ; rdx = callback(rax)
     xor r15, r9 ; r15[r10 = 0]
 
     inc r10      ; loop1: while r10 != 5
-    println
     cmp r10, 5
     jne .loop1
 

@@ -171,12 +171,6 @@ _vm_set_input: ; rdx = vm_id, rax = input
     mov r15, rdx
     mov rcx, rax
     push rdx
-;    printd 99001
-;    prints colon, 1
-;    printd r15
-;    prints colon, 1
-;    printd rcx
-;    println
     pop rdx
     mov rax, VM_INPUT
     ;rdx:rax=rcx
@@ -359,20 +353,8 @@ _vm_run: ; rdx = vm_id
 ;    call _dump_vm
     vm_get_opcode rdx, VM_IP, r12
     vm_get_opcode rdx, r12, r13
-;    prints s_ip, s_ip.len
-;    printd r12
-;    prints colon, 1
-;    printd r13
-;    println
     mov r10, r13
     to_instr r10
-;    printd 7770
-;    prints colon,1
-;    prints colon,1
-;    printd r13
-;    prints colon,1
-;    printd r10
-;    println
     cmp r10, I_ADD
     je .i_add
     cmp r10, I_MUL
@@ -398,10 +380,6 @@ _vm_run: ; rdx = vm_id
     ret
     ; ... and if we're still here, somethings wrong
 .i_add:
-;    printd 7001
-;    prints colon, 1
-;    printd r12
-;    println
     mov r11, r12
     inc r11
     ; rdx=vm id, rax=instruction, rsi=param#, rcx=param_adr -> rax
@@ -413,12 +391,6 @@ _vm_run: ; rdx = vm_id
     vm_get_opcode r15, r11, r10
     add r9, r8
     vm_set_opcode r15, r10, r9
-;    printd r8
-;    prints comma, 1
-;    printd r9
-;    prints comma, 1
-;    printd r10  
-;    println
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next
@@ -443,12 +415,6 @@ _vm_run: ; rdx = vm_id
     pop rax
 ;    add r9, r8
     vm_set_opcode r15, r10, r9
-;   printd r8
-;    prints comma, 1
-;    printd r9
-;    prints comma, 1
-;    printd r10  
-;    println
     inc r11
     vm_set_opcode r15, VM_IP, r11
     jmp .next

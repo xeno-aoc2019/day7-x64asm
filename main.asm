@@ -31,16 +31,37 @@ load_program:
     ret
 
 %macro init_vm 1
+    push rdx
+    push rcx
+    push rax
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
     mov rcx, [program_size]
     mov rax, program_p
     mov rdx, %1 ; vm_id
     vm_init ; rax = program_p, rcx=program_size, rdx=vm_id
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop rax
+    pop rcx
+    pop rdx
 %endmacro
 
 run_vms_with_rax_values:
-    print_hex rax
-    println
-    printd 999912349999
+    push r15
+    mov r15, rax
+    prints phase_lab, phase_lab.len
+    printd 1
+    prints space, 1
+    print_hex r15
     println
     init_vm 0
     init_vm 1
@@ -49,6 +70,11 @@ run_vms_with_rax_values:
     init_vm 4
 
     vm_run 0
+    prints phase_lab, phase_lab.len
+    printd 2
+    prints space, 1
+    print_hex r15
+    println
     vm_set_input 0, 4
     vm_run 0
     vm_set_input 0, 0
@@ -80,6 +106,7 @@ run_vms_with_rax_values:
     vm_get_output 4, r14
     printd r14
     println
+    pop r15
     ret
 
 start:
@@ -133,4 +160,6 @@ trace_lab       db    "trace: "
 program_p       dq    0x0
 program_iter    dq    0x0
 program_size    dq    0x0
+phase_lab       db    "phase settings: "
+.len            equ   $ - phase_lab    
  
