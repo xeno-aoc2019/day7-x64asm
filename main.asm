@@ -5,6 +5,7 @@
 %include "printd.inc"
 %include "memalloc.inc"
 %include "vm.inc"
+%include "perm.inc"
 
 ; handle_error error_code errno
 %macro handle_error 2
@@ -36,8 +37,11 @@ load_program:
     vm_init ; rax = program_p, rcx=program_size, rdx=vm_id
 %endmacro
 
-start:
-    call load_program
+run_vms_with_rax_values:
+    print_hex rax
+    println
+    printd 999912349999
+    println
     init_vm 0
     init_vm 1
     init_vm 2
@@ -76,6 +80,12 @@ start:
     vm_get_output 4, r14
     printd r14
     println
+    ret
+
+start:
+    call load_program
+    perm5 run_vms_with_rax_values
+    ; call run_vms_with_rax_values
     sys_exit EXIT_SUCCESS
 
 error_handler:

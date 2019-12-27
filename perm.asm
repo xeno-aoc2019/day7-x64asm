@@ -3,7 +3,7 @@
 %include "syscall.inc"
 
 default rel
-global _perm, start
+global _perm_5_of_0_4, _print_num
 section .text
 
 %macro make_bit 2 ; make_bit r9, r10b => r9=2^r10
@@ -161,17 +161,28 @@ _perm_5_of_0_4: ; rdx = callback(rax)
     ; call _print_num
  ;   call rdx
  ;   prints values_lab, values_lab.len
+    push rdx
     sequence5 rax, r10, r11, r12, r13, r14
+    push rax
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
     call rdx
-    println
- ;   call _print_num
- ;   prints space, 1 
- ;   mov rax, r15
- ;   call _print_5_bits_rev
- ;   prints space, 1
- ;   mov rax, 0b11111
- ;   call _print_5_bits_rev
- ;   println
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rax
+    pop rdx
 
 .skip:
 
@@ -224,4 +235,6 @@ digits          db    "0123456789abcdef"
 newline         db    0x0a
 space           db    " "
 values_lab      db    "values: "
-.len            db    $ - values_lab
+.len            equ   $ - values_lab
+calling_lab     db    "calling: "
+.len            equ   $ - calling_lab

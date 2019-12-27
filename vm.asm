@@ -171,12 +171,12 @@ _vm_set_input: ; rdx = vm_id, rax = input
     mov r15, rdx
     mov rcx, rax
     push rdx
-    printd 99001
-    prints colon, 1
-    printd r15
-    prints colon, 1
-    printd rcx
-    println
+;    printd 99001
+;    prints colon, 1
+;    printd r15
+;    prints colon, 1
+;    printd rcx
+;    println
     pop rdx
     mov rax, VM_INPUT
     ;rdx:rax=rcx
@@ -236,6 +236,13 @@ _vm_is_iowait: ; rdx = vm_id -> rcx
     vm_get_opcode rdx, VM_IOWAIT, rcx
     ret
 
+free_vm:
+    lea r10, [rel program_p]
+    add r10, r15 ; r10 = program_p[r15]
+    memalloc [r10], 100000 ; r13 for the program, but registers at the end
+    ret
+
+
 copy_program: ; rax = vm id (0-4), rcx = program size
     push r15
     shl rax, 3 ; rax = rax * 8 (vm id to byte offset)
@@ -243,7 +250,12 @@ copy_program: ; rax = vm id (0-4), rcx = program size
     mov r13, rcx ; r13 = program_size
     lea r10, [rel program_p]
     add r10, r15 ; r10 = program_p[r15]
+    mov rcx, [r10]
+    jrcxz .need_buf
+    jmp .got_buf
+.need_buf:
     memalloc [r10], 100000 ; r13 for the program, but registers at the end
+.got_buf:
     xor r11, r11
     mov r12, 0
 .loop:
@@ -344,23 +356,23 @@ _vm_run: ; rdx = vm_id
     vm_set_opcode r15, VM_IOWAIT, 0
 .next:
     mov rdx, r15
-    call _dump_vm
+;    call _dump_vm
     vm_get_opcode rdx, VM_IP, r12
     vm_get_opcode rdx, r12, r13
-    prints s_ip, s_ip.len
-    printd r12
-    prints colon, 1
-    printd r13
-    println
+;    prints s_ip, s_ip.len
+;    printd r12
+;    prints colon, 1
+;    printd r13
+;    println
     mov r10, r13
     to_instr r10
-    printd 7770
-    prints colon,1
-    prints colon,1
-    printd r13
-    prints colon,1
-    printd r10
-    println
+;    printd 7770
+;    prints colon,1
+;    prints colon,1
+;    printd r13
+;    prints colon,1
+;    printd r10
+;    println
     cmp r10, I_ADD
     je .i_add
     cmp r10, I_MUL
