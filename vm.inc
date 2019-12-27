@@ -28,6 +28,22 @@ extern _vm_is_halted
     push rdx
     mov rdx, %1
     mov rax, %2
+    push rdx
+    push rax
+    push r15
+    push r14
+    mov r14, rdx
+    mov r15, rax
+    printd 103
+    prints space, 1
+    printd r14
+    prints space, 1
+    printd r15
+    println
+    pop r14
+    pop r15
+    pop rax
+    pop rdx
     call _vm_set_input
     pop rdx
 %endmacro
