@@ -8,6 +8,7 @@
 %define COMMA   44
 %define NEWLINE 10
 %define ZERO    0x30
+%define MINUS   0x2d
 
 %macro debug_num 2
 ; noop - so nice and quiet
@@ -48,6 +49,8 @@ disp_bytes: ; rax
     push r14
     xor r10, r10
     ; r10 = byte_count
+    ; r14 = minus
+    mov r14, 0
 .loop:
     cmp r10, 8   ; if byte_code = 8 goto end
     je .end
@@ -116,6 +119,8 @@ process_bytes: ; rax = curr_val, rcx = int
     ; rax = curr_val
     ; rsi = int
     ; r13 = current_char/digit
+    ; r14 = negative marker
+    mov r14, 0; assumes not negative
 .loop:
     cmp r10, 8     ; if byte_count = 8 goto end (byte finished)
     je .end
@@ -129,6 +134,8 @@ process_bytes: ; rax = curr_val, rcx = int
     je .null
     cmp r13, COMMA ; if current_char = COMMA goto comma
     je .comma
+    cmp r13, MINUS ; the current number will be negative (note: ignores position)
+    je .minus
     sub r13, ZERO ; current_char.int_from_ascii
  
     debug_num 200, r13
@@ -142,17 +149,28 @@ process_bytes: ; rax = curr_val, rcx = int
     shr rcx, 8      ; removing int.last_byte
     jmp .loop       ; continue to next char
 
+.minus:
+    mov r14, 1      ; marks this as negative
+    inc r10
+    shr rcx, 8
+    jmp .loop
+
 .comma:
     debug_num 390, rcx
     debug_num 391, rcx
     ; prints comma, 1
     ; println
     debug_num 393, rcx
+    cmp r14, 1
+    jne .not_negative
+    neg rax
+.not_negative:
     debug_num 400, rax
     call program_append ; rax
     shr rcx, 8
     xor rax, rax             ; current_val = 0 (next value)
     inc r10                  ; byte_count++
+    mov r14, 0                ; assumes next is positive
     jmp .loop                 ; continue to next char
 
 .null:

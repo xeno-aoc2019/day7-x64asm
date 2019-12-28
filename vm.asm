@@ -6,7 +6,7 @@
 
 default rel
 global _vm_init, _vm_get_opcode, _vm_set_opcode, _vm_run, _vm_is_iowait,\
-       _vm_is_halted, _vm_set_input, _vm_get_output
+       _vm_is_halted, _vm_set_input, _vm_get_output, _dump_vm
 section .text
 
 %define VM_IP       4000

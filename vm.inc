@@ -6,6 +6,7 @@ extern _vm_set_input
 extern _vm_get_output
 extern _vm_is_iowait
 extern _vm_is_halted
+extern _dump_vm
 
 %macro vm_init 0
     call _vm_init
@@ -45,6 +46,13 @@ extern _vm_is_halted
     pop rax
     pop rdx
     call _vm_set_input
+    pop rdx
+%endmacro
+
+%macro dump_vm 1
+    push rdx
+    mov rdx, %1
+    call _dump_vm
     pop rdx
 %endmacro
 

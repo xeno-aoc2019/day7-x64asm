@@ -61,6 +61,7 @@ load_program:
     init_vm 2
     init_vm 3
     init_vm 4
+    dump_vm 0
 %endmacro
 
 %macro print_phases 1
@@ -113,29 +114,25 @@ run_vms_with_rax_values:
     ; set up vm's for running
     push r15
     mov r15, rax ; r15 = phase values
+    add r15, 0x55555 ; ([0-4]{5} -> [5-9]{5})
     print_phases r15
     init_vms
 
     ; setting phase values (r15 = perm(0-4), setting perm(5-9))
     vm_run 0                    ; start vm 0 and initiate with first phase value
     mov_last_hexdigit r13, r15
-    add r13, 5 ; 0-4 => 5-9
     vm_set_input 0, r13
     vm_run 1                    ; start vm 1 and initiate with next phase value
     mov_last_hexdigit r13, r15  
-    add r13, 5 ; 0-4 => 5-9
     vm_set_input 1, r13
     vm_run 2                    ; start vm 2 and initiate with next phase value
     mov_last_hexdigit r13, r15  
-    add r13, 5 ; 0-4 => 5-9
     vm_set_input 2, r13
     vm_run 3                    ; start vm 3 and initiate with next phase value
     mov_last_hexdigit r13, r15  
-    add r13, 5 ; 0-4 => 5-9
     vm_set_input 3, r13
     vm_run 4                    ; start vm 4 and initiate with next phase value
     mov_last_hexdigit r13, r15  
-    add r13, 5 ; 0-4 => 5-9
     vm_set_input 4, r13
 
     mov r14, 0
@@ -159,7 +156,7 @@ run_vms_with_rax_values:
     vm_run 3
     vm_set_input 3, r14
     vm_run 3
-    vm_get_output 2, r14
+    vm_get_output 3, r14
 
     vm_run 4
     vm_set_input 4, r14
@@ -187,6 +184,7 @@ run_vms_with_rax_values:
 start:
     call load_program
     perm5 run_vms_with_rax_values
+    ; mov rax, 0x01234
     ; call run_vms_with_rax_values
     sys_exit EXIT_SUCCESS
 
